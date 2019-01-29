@@ -128,8 +128,8 @@ def makeMove(board, dir):
         #print(temp.eRow, temp.eCol)
         if not(temp.eCol - 1 < 0):
             #print(temp.values[temp.eRow - 1][temp.eCol])
-            temp.values[(temp.eRow * dim) + temp.eCol] = temp.values[temp.eRow + ((temp.eCol - 1) * dim)]
-            temp.values[temp.eRow + ((temp.eCol - 1) * dim)] = " "
+            temp.values[(temp.eRow * dim) + temp.eCol] = temp.values[(temp.eRow * dim) + (temp.eCol - 1)]
+            temp.values[(temp.eRow * dim) + (temp.eCol - 1)] = " "
             temp.eCol -= 1
             temp.pCost += 1
         else:
@@ -138,8 +138,8 @@ def makeMove(board, dir):
         #print(temp.eRow, temp.eCol)
         if temp.eCol + 1 < dim:
             #print(temp.values[temp.eRow - 1][temp.eCol])
-            temp.values[(temp.eRow * dim) + temp.eCol] = temp.values[temp.eRow + ((temp.eCol + 1) * dim)]
-            temp.values[temp.eRow + ((temp.eCol + 1) * dim)] = " "
+            temp.values[(temp.eRow * dim) + temp.eCol] = temp.values[(temp.eRow * dim) + (temp.eCol + 1)]
+            temp.values[(temp.eRow * dim) + (temp.eCol + 1)] = " "
             temp.eCol -= 1
             temp.pCost += 1
         else:
@@ -162,16 +162,19 @@ def aStar(start, goal, option):
         explored.add(node) #if we go over class today how to prevent this nvm
         #creating possible successors from the node
         for i in range(4):
-            #print("Child: " + str(i))
             tempBoard = Board(node.values, node.pCost, node.hCost) #do we need this line?
             #tempBoard.showBoard()
             childBoard = makeMove(tempBoard, i)
-            #print(childBoard)
+            # print("Parent" + str(j) + " Child: " + str(i))
+            # print(childBoard)
             if childBoard != None:
                 if childBoard not in explored:
                     childBoard.hCost = getH(childBoard, goal, option)
                     childBoard.tCost = childBoard.pCost + childBoard.hCost
+                    # print("tCost: " + str(childBoard.tCost) + " pCost: " + str(childBoard.pCost) + "\n")
                     frontier.put((childBoard.tCost, childBoard))
+        if(j > 100):
+            return None
     return None
 
 
@@ -179,6 +182,9 @@ def aStar(start, goal, option):
 def main():
     values = ["7","2","4","5"," ","6","8","3","1"]
     gValues = [" ","1","2","3","4","5","6","7","8"]
+    # values = ["1", "8", "3", "5", " ", "2", "4", "6", "7"]
+    # gValues = ["1", "3", "2", "5", "8", " ", "4", "6", "7"]
+
     testBoard = Board(values, 0, 0)
     goalBoard = Board(gValues, 0, 0)
     # testBoard.showBoard()
@@ -199,9 +205,9 @@ def main():
     # nextBoard.showBoard()
     print("Initial: ")
     print(testBoard)
-    print("Final: ")
-    final = aStar(testBoard , goalBoard, 1)
-    print(final.pCost)
+    #print("Final: ")
+    final = aStar(testBoard , goalBoard, 2)
+    #print(final.pCost)
 
 
 
