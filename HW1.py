@@ -9,7 +9,7 @@ import Queue
 #I think it's better to have a Tile class, I'll explain why later.
 #Is it slower to use a double list for our board than doing a single list indexed by arithmetic?
 #Nah, same amount of assignments and comparisons algorithmically right?
-
+#hello
 class Board:
     def __init__(self, values):
         self.board = [[0 for x in range(dim)] for y in range(dim)]
@@ -35,7 +35,7 @@ class Board:
                 temp += "|" + self.board[row][col]
             string += temp + "|\n"
         return string
-    
+
     def showBoard(self):
         print(self)
 
@@ -66,7 +66,7 @@ def getH(current, goal, option):
                 if goal.board[row][col] != " " and current.board[row][col] != goal.board[row][col]:
                     count += 1
         return count
-    
+
     elif(option == 2):
         count = 0
         currentDict = {}
@@ -77,11 +77,11 @@ def getH(current, goal, option):
                 goalDict[goal.board[row][col]] = [row, col]
         for i in range((dim * dim) - 1):
             index = str(i + 1)
-            
-            count += abs(currentDict[index][0] - goalDict[index][0]) + abs(currentDict[index][1] - goalDict[index][1])
-    return count  
 
-def makeMove(board, dir): 
+            count += abs(currentDict[index][0] - goalDict[index][0]) + abs(currentDict[index][1] - goalDict[index][1])
+    return count
+
+def makeMove(board, dir):
 #0 is up, 1 is down, 2 is right, 3 is left
 #so I recreate the value list that is taken in Board to do the move, but I think this may be an expensive operation
     tempVals= [" " for i in range(dim * dim)]
@@ -110,7 +110,7 @@ def makeMove(board, dir):
             temp.board[temp.eRow - 1][temp.eCol] = " "
             temp.eRow += 1
             temp.pCost += 1
-        else: 
+        else:
             return None
     if dir == 2: # right
         #print(temp.eRow, temp.eCol)
@@ -120,7 +120,7 @@ def makeMove(board, dir):
             temp.board[temp.eRow][temp.eCol - 1] = " "
             temp.eCol -= 1
             temp.pCost += 1
-        else: 
+        else:
             return None
     if dir == 3: # left
         #print(temp.eRow, temp.eCol)
@@ -130,7 +130,7 @@ def makeMove(board, dir):
             temp.board[temp.eRow][temp.eCol + 1] = " "
             temp.eCol += 1
             temp.pCost += 1
-        else: 
+        else:
             return None
     return temp
 def aStar(start, goal, option):
@@ -141,7 +141,7 @@ def aStar(start, goal, option):
         nextBoard = makeMove(tempBoard, option)
         if not(nextBoard == None):
             nextBoard.showBoard()
-        
+
     return 0
 
 
@@ -165,9 +165,8 @@ def main():
     nextBoard = makeMove(moveBoard, 1)
     #print("board after move \n")
     nextBoard.showBoard()
-   
+
 
 
 if __name__== "__main__":
     main()
- 
