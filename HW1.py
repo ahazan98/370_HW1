@@ -33,6 +33,18 @@ class Board:
         #         self.values[row][col] = values[i]
         #         i += 1
 
+    def __hashcode__(self):
+        string = ""
+        for i in range(dim * dim):
+            if(self.values[i] == " "):
+                string += "0"
+            else:
+                string += str(self.values[i])
+        return int(string)
+
+    def __eq__(self, other):
+        pass
+
     def __str__(self):
         string = ""
         for row in range(dim):
@@ -151,12 +163,12 @@ def aStar(start, goal, option):
     explored = set()
     frontier.put((start.tCost, start))
     node = start
-    j = 0
+    # j = 0
     while(not(frontier.empty())):
         node = frontier.get()[1]
-        print("Stage: " + str(j))
-        print(node)
-        j += 1
+        # print("Stage: " + str(j))
+        # print(node)
+        # j += 1
         if(node.isGoal(goal)):
             return node
         explored.add(node) #if we go over class today how to prevent this nvm
@@ -167,14 +179,15 @@ def aStar(start, goal, option):
             childBoard = makeMove(tempBoard, i)
             # print("Parent" + str(j) + " Child: " + str(i))
             # print(childBoard)
-            if childBoard != None:
+            if childBoard is not None:
                 if childBoard not in explored:
                     childBoard.hCost = getH(childBoard, goal, option)
                     childBoard.tCost = childBoard.pCost + childBoard.hCost
+                    # print(childBoard.tCost)
                     # print("tCost: " + str(childBoard.tCost) + " pCost: " + str(childBoard.pCost) + "\n")
                     frontier.put((childBoard.tCost, childBoard))
-        if(j > 100):
-            return None
+        # if(j > 100):
+        #     return None
     return None
 
 
@@ -187,6 +200,12 @@ def main():
 
     testBoard = Board(values, 0, 0)
     goalBoard = Board(gValues, 0, 0)
+
+    thislist = ["apple", "banana", "cherry"]
+    if "bee" not in thislist:
+        print("Yes, 'apple' is in the fruits list")
+
+    #print("H1: " + str(getH(testBoard, goalBoard, 1)) + "\nH2: " + str(getH(testBoard, goalBoard, 2)))
     # testBoard.showBoard()
     # goalBoard.showBoard()
     # print(testBoard.isGoal(testBoard))
@@ -205,8 +224,9 @@ def main():
     # nextBoard.showBoard()
     print("Initial: ")
     print(testBoard)
+
     #print("Final: ")
-    final = aStar(testBoard , goalBoard, 2)
+    #final = aStar(testBoard , goalBoard, 2)
     #print(final.pCost)
 
 
