@@ -9,7 +9,7 @@ import Queue
 #I think it's better to have a Tile class, I'll explain why later.
 #Is it slower to use a double list for our board than doing a single list indexed by arithmetic?
 #Nah, same amount of assignments and comparisons algorithmically right?
-#hello
+
 class Board:
     def __init__(self, values):
         self.board = [[0 for x in range(dim)] for y in range(dim)]
@@ -134,15 +134,27 @@ def makeMove(board, dir):
             return None
     return temp
 def aStar(start, goal, option):
-    frontier = Queue.PriorityQueue()
-    for i in range(4):
-        tempBoard = Board(start.values)
-        tempBoard.showBoard()
-        nextBoard = makeMove(tempBoard, option)
-        if not(nextBoard == None):
-            nextBoard.showBoard()
-
-    return 0
+    frontier = queue.PriorityQueue()
+    explored = {}
+    frontier.put((start.tCost, start))
+    node = start
+    while(node != goal):
+        if(frontier.empty()) or (node == None):
+            return None
+        node = frontier.get()
+        if(node = goal):
+            return node
+        explored.add((node.tCost, node)) #if we go over class today how to prevent this nvm
+        #creating possible successors from the node
+        for i in range(4):
+            tempBoard = Board(node.values) #do we need this line?
+            #tempBoard.showBoard()
+            childBoard = makeMove(tempBoard, i)
+            if nextBoard != None:
+                if childBoard not in explored:
+                    explored.add((childBoard.tCost, childBoard))
+                    #nextBoard.showBoard()
+    return node
 
 
 def main():
