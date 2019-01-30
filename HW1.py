@@ -1,7 +1,9 @@
 dim = 3
+expNum = 1200
 
 import random
 import Queue
+import math
 #board class and A* function, with init, make a move, is goal, shuffle, compares
 #h1 and h2 are different functions, could be either
 #General Notes:
@@ -21,9 +23,8 @@ class Board:
         self.tCost = self.pCost + self.hCost
 
         for i in range(dim * dim):
-            if self.values[i] == " ":
+            if self.values[i] == 0:
                 self.eRow = i / dim
-
                 self.eCol = (i % dim)
         # for row in range(dim):
         #     for col in range(dim):
@@ -33,24 +34,21 @@ class Board:
         #         self.values[row][col] = values[i]
         #         i += 1
 
-    def __hashcode__(self):
-        string = ""
-        for i in range(dim * dim):
-            if(self.values[i] == " "):
-                string += "0"
-            else:
-                string += str(self.values[i])
-        return int(string)
+    def __hash__(self):
+        return hash(tuple(self.values))
 
     def __eq__(self, other):
-        pass
+        for i in range(dim * dim):
+            if self.values[i] != other.values[i]:
+                return False
+        return True
 
     def __str__(self):
         string = ""
         for row in range(dim):
             temp = ""
             for col in range(dim):
-                temp += "|" + self.values[(row * dim) + col]
+                temp += "|" + str(self.values[(row * dim) + col])
             string += temp + "|\n"
         return string
 
@@ -72,7 +70,7 @@ class Board:
         # values = ["1","2","3","4","5","6","7","8", " "]
         random.shuffle(self.values)
         for i in range(dim * dim):
-            if self.values[i] == " ":
+            if self.values[i] == 0:
                 self.eRow = i / dim
                 self.eCol = i % dim
         # i = 0
@@ -88,7 +86,7 @@ def getH(current, goal, option):
     if(option == 1):
         count = 0
         for i in range(dim * dim):
-            if current.values[i] != goal.values[i] and goal.values[i] != " ":
+            if current.values[i] != goal.values[i] and goal.values[i] != 0:
                 count += 1
         return count
 
@@ -101,26 +99,25 @@ def getH(current, goal, option):
                 currentDict[current.values[(row * dim) + col]] = [row, col]
                 goalDict[goal.values[(row * dim) + col]] = [row, col]
         for i in range((dim * dim) - 1):
-            index = str(i + 1)
+            index = i + 1
             count += abs(currentDict[index][0] - goalDict[index][0]) + abs(currentDict[index][1] - goalDict[index][1])
     return count
 
 def makeMove(board, dir):
 #0 is up, 1 is down, 2 is right, 3 is left
 #so I recreate the value list that is taken in Board to do the move, but I think this may be an expensive operation
-    tempVals= [" " for i in range(dim * dim)]
+    tempVals= [0 for i in range(dim * dim)]
     for row in range(dim):
         for col in range(dim):
             tempVals[row* dim + col] = board.values[(row * dim) + col]
     temp = Board(tempVals, board.pCost, board.hCost)
-    #
     # print("board about to be moved")
     # temp.showBoard()
     if dir == 0: # up
         if temp.eRow + 1 < dim:
             #print(temp.values[temp.eRow + 1][temp.eCol])
             temp.values[(temp.eRow * dim) + temp.eCol] = temp.values[((temp.eRow + 1) * dim) + temp.eCol]
-            temp.values[((temp.eRow + 1) * dim) + temp.eCol] = " "
+            temp.values[((temp.eRow + 1) * dim) + temp.eCol] = 0
             temp.eRow += 1
             temp.pCost += 1
             #print(temp.eRow)
@@ -131,7 +128,7 @@ def makeMove(board, dir):
         if not(temp.eRow - 1 < 0):
             #print(temp.values[temp.eRow - 1][temp.eCol])
             temp.values[(temp.eRow * dim) + temp.eCol] = temp.values[((temp.eRow - 1) * dim) + temp.eCol]
-            temp.values[((temp.eRow - 1) * dim) + temp.eCol] = " "
+            temp.values[((temp.eRow - 1) * dim) + temp.eCol] = 0
             temp.eRow -= 1
             temp.pCost += 1
         else:
@@ -141,7 +138,7 @@ def makeMove(board, dir):
         if not(temp.eCol - 1 < 0):
             #print(temp.values[temp.eRow - 1][temp.eCol])
             temp.values[(temp.eRow * dim) + temp.eCol] = temp.values[(temp.eRow * dim) + (temp.eCol - 1)]
-            temp.values[(temp.eRow * dim) + (temp.eCol - 1)] = " "
+            temp.values[(temp.eRow * dim) + (temp.eCol - 1)] = 0
             temp.eCol -= 1
             temp.pCost += 1
         else:
@@ -151,7 +148,7 @@ def makeMove(board, dir):
         if temp.eCol + 1 < dim:
             #print(temp.values[temp.eRow - 1][temp.eCol])
             temp.values[(temp.eRow * dim) + temp.eCol] = temp.values[(temp.eRow * dim) + (temp.eCol + 1)]
-            temp.values[(temp.eRow * dim) + (temp.eCol + 1)] = " "
+            temp.values[(temp.eRow * dim) + (temp.eCol + 1)] = 0
             temp.eCol -= 1
             temp.pCost += 1
         else:
@@ -163,71 +160,68 @@ def aStar(start, goal, option):
     explored = set()
     frontier.put((start.tCost, start))
     node = start
-    # j = 0
     while(not(frontier.empty())):
         node = frontier.get()[1]
-        # print("Stage: " + str(j))
-        # print(node)
-        # j += 1
         if(node.isGoal(goal)):
             return node
-        explored.add(node) #if we go over class today how to prevent this nvm
-        #creating possible successors from the node
+        explored.add(node)
         for i in range(4):
-            tempBoard = Board(node.values, node.pCost, node.hCost) #do we need this line?
-            #tempBoard.showBoard()
+            tempBoard = Board(node.values, node.pCost, node.hCost)
             childBoard = makeMove(tempBoard, i)
-            # print("Parent" + str(j) + " Child: " + str(i))
-            # print(childBoard)
             if childBoard is not None:
                 if childBoard not in explored:
                     childBoard.hCost = getH(childBoard, goal, option)
                     childBoard.tCost = childBoard.pCost + childBoard.hCost
-                    # print(childBoard.tCost)
-                    # print("tCost: " + str(childBoard.tCost) + " pCost: " + str(childBoard.pCost) + "\n")
                     frontier.put((childBoard.tCost, childBoard))
-        # if(j > 100):
-        #     return None
     return None
 
+def randomPuzzle(start):
+    rBoard = Board(start.values, 0, 0)
+    rNumDep = random.randint(2,25)
+    for i in range(rNumDep):
+        rNumDir = random.randint(0,4)
+        rBoard = makeMove(rBoard, rNumDir)
+    return rBoard
+
+#okay one problem here, you know how we asked about 1200 random puzzles we test? If you look at the reading
+#it's 1200 random puzzles beacuse they did 100 puzzles at each depth from 2-24 going up even. In other words,
+#for depth 2,4,6,....24 they had 100 random puzzles to do for each depth. But if we generate the puzzles
+#the way Dr. Ramanujan told us to do, we have no control of controlling the depth, and therefore we are going to
+#get a way variety of numbers. So we are given three choices:
+#1. Ignore the 1200 stuff on the paper and create our own experiment protocol and conduct it
+#2. Do it the above randomPuzzle way and do the algorithms until we reach 100 for each (ofc we'll code this)
+#3. Re-code the randomPuzzle function so that we can choose our depth
+#Think it'd be best if we ask Dr. R tomorrow how to go on but I wanted to hear your thoughts too
+#Apparently other groups did it by second method
+
+def experiment():
+    tested = {}
+    for i in range(expNum):
+        values = [0,1,2,3,4,5,6,7,8]
+        random.shuffle(values)
+        testStart = Board(values, 0, 0)
+        testGoal = randomPuzzle(testStart)
+        tested[testStart] = testGoal
+        if testStart in tested:
+            if tested[testStart] == testGoal
+            tested.add(testSub)
+        solution = aStar(testSub).pCost
 
 
 def main():
-    values = ["7","2","4","5"," ","6","8","3","1"]
-    gValues = [" ","1","2","3","4","5","6","7","8"]
-    # values = ["1", "8", "3", "5", " ", "2", "4", "6", "7"]
-    # gValues = ["1", "3", "2", "5", "8", " ", "4", "6", "7"]
+    # Test Case for Scan
+    # values = [7,2,4,5,0,6,8,3,1]
+    # gValues = [0,1,2,3,4,5,6,7,8]
+    # testBoard = Board(values, 0, 0)
+    # goalBoard = Board(gValues, 0, 0)
+    # print("Initial: ")
+    # print(testBoard)
+    # print("Final: ")
+    # final = aStar(testBoard , goalBoard, 2)
+    # print(final)
+    # print(final.pCost)
 
-    testBoard = Board(values, 0, 0)
-    goalBoard = Board(gValues, 0, 0)
 
-    thislist = ["apple", "banana", "cherry"]
-    if "bee" not in thislist:
-        print("Yes, 'apple' is in the fruits list")
-
-    #print("H1: " + str(getH(testBoard, goalBoard, 1)) + "\nH2: " + str(getH(testBoard, goalBoard, 2)))
-    # testBoard.showBoard()
-    # goalBoard.showBoard()
-    # print(testBoard.isGoal(testBoard))
-    # print(testBoard.eRow, testBoard.eCol)
-    # print("modulo"+ str(2 % 3) + "\n")
-    # testBoard.shuffleBoard()
-    # testBoard.showBoard()
-    # print(testBoard.eRow, testBoard.eCol)
-    # print("moving up..\n")
-    # moveBoard = makeMove(testBoard,0)
-    # print("moved board\n")
-    # moveBoard.showBoard()
-    # print(moveBoard.eRow, moveBoard.eCol)
-    # nextBoard = makeMove(moveBoard, 1)
-    # print("board after move \n")
-    # nextBoard.showBoard()
-    print("Initial: ")
-    print(testBoard)
-
-    #print("Final: ")
-    #final = aStar(testBoard , goalBoard, 2)
-    #print(final.pCost)
 
 
 
