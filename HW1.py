@@ -174,13 +174,31 @@ def aStar(start, goal, option):
                     childBoard.tCost = childBoard.pCost + childBoard.hCost
                     frontier.put((childBoard.tCost, childBoard))
     return None
-
-def randomPuzzle(start):
+#we have a problem in random puzzle when we generate a faulty move because our makeMove returns None. The code below is an idea for a solution
+#where we try to preserve a copy of the board before we try any move and maintain a set of illegal moves for that board, so that whenever we
+#try to make an illegal move, we add that direction to the set and try a different move that could be legal. Another option which might be worth 
+#exploring is changing our makeMove function to just return the input board if you try to make a wrong move. We would have to alter some of our test
+#cases, saying "if moveBoard == startBoard" instead of "if newBoard == None". 
+def randomPuzzle(start, numDep):
     rBoard = Board(start.values, 0, 0)
+    #not using rNumDep right now
     rNumDep = random.randint(2,25)
-    for i in range(rNumDep):
+    for i in range(numDep):
+        wrongDirs = set()
         rNumDir = random.randint(0,4)
+        #create a copy before making the move
+        safeBoard = Board(rBoard.values, rBoard.pCost, rBoard.hCost)
         rBoard = makeMove(rBoard, rNumDir)
+        #testing for when an invalid move is randomly generated
+        while rBoard is not None:
+            wrongDirs.add(rNumDir)
+            newRNumDir = random.randint(0,4)
+            if newRNumDir not in wrongDirs:
+                safeBoard = makeMove(safeBoard, newRNumDir)
+            else:
+                wrongDirs.add(newRNumDir)
+        rBoard = safeBoard
+            
     return rBoard
 
 #okay one problem here, you know how we asked about 1200 random puzzles we test? If you look at the reading
@@ -194,6 +212,7 @@ def randomPuzzle(start):
 #Think it'd be best if we ask Dr. R tomorrow how to go on but I wanted to hear your thoughts too
 #Apparently other groups did it by second method
 
+#Alex Comments: I like doing option number two
 def experiment():
     tested = {}
     for i in range(expNum):
@@ -203,16 +222,16 @@ def experiment():
         testGoal = randomPuzzle(testStart)
         tested[testStart] = testGoal
         if testStart in tested:
-            if tested[testStart] == testGoal
-            tested.add(testSub)
+            if tested[testStart] == testGoal:
+                tested.add(testSub)
         solution = aStar(testSub).pCost
 
 
 def main():
     # Test Case for Scan
-    # values = [7,2,4,5,0,6,8,3,1]
+    values = [7,2,4,5,0,6,8,3,1]
     # gValues = [0,1,2,3,4,5,6,7,8]
-    # testBoard = Board(values, 0, 0)
+    testBoard = Board(values, 0, 0)
     # goalBoard = Board(gValues, 0, 0)
     # print("Initial: ")
     # print(testBoard)
@@ -220,6 +239,8 @@ def main():
     # final = aStar(testBoard , goalBoard, 2)
     # print(final)
     # print(final.pCost)
+    test = randomPuzzle(testBoard, 2)
+    print(test)
 
 
 
