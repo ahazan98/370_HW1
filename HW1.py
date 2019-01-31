@@ -38,6 +38,11 @@ class Board:
         return hash(tuple(self.values))
 
     def __eq__(self, other):
+        if(other == None):
+            if type(self) == type(other):
+                return True
+            else:
+                return False
         for i in range(dim * dim):
             if self.values[i] != other.values[i]:
                 return False
@@ -163,7 +168,7 @@ def aStar(start, goal, option):
     while(not(frontier.empty())):
         node = frontier.get()[1]
         if(node.isGoal(goal)):
-            return node
+            return [node, len(explored)]
         explored.add(node)
         for i in range(4):
             tempBoard = Board(node.values, node.pCost, node.hCost)
@@ -176,30 +181,49 @@ def aStar(start, goal, option):
     return None
 #we have a problem in random puzzle when we generate a faulty move because our makeMove returns None. The code below is an idea for a solution
 #where we try to preserve a copy of the board before we try any move and maintain a set of illegal moves for that board, so that whenever we
-#try to make an illegal move, we add that direction to the set and try a different move that could be legal. Another option which might be worth 
+#try to make an illegal move, we add that direction to the set and try a different move that could be legal. Another option which might be worth
 #exploring is changing our makeMove function to just return the input board if you try to make a wrong move. We would have to alter some of our test
-#cases, saying "if moveBoard == startBoard" instead of "if newBoard == None". 
-def randomPuzzle(start, numDep):
+#cases, saying "if moveBoard == startBoard" instead of "if newBoard == None".
+def randomPuzzle(start, depth):
     rBoard = Board(start.values, 0, 0)
-    #not using rNumDep right now
-    rNumDep = random.randint(2,25)
-    for i in range(numDep):
-        wrongDirs = set()
-        rNumDir = random.randint(0,4)
+    # #not using rNumDep right now
+    # randVals = [2,4,6,8,10,12,14,16,18,20,22,24]
+    # for i in finished:
+    #     randVals.remove(i)
+    # rNumSol = random.choice(randVals)
+    visited = set()
+    visited.add(rBoard)
+    for i in range(depth):
+        rNumDir = random.randint(0,3)
         #create a copy before making the move
-        safeBoard = Board(rBoard.values, rBoard.pCost, rBoard.hCost)
-        rBoard = makeMove(rBoard, rNumDir)
-        #testing for when an invalid move is randomly generated
-        while rBoard is not None:
-            wrongDirs.add(rNumDir)
-            newRNumDir = random.randint(0,4)
-            if newRNumDir not in wrongDirs:
-                safeBoard = makeMove(safeBoard, newRNumDir)
+        flag = False
+        while(flag == False):
+            temp = Board(rBoard.values, rBoard.pCost, rBoard.hCost)
+            rBoard = makeMove(rBoard, rNumDir)
+            if(rBoard != None):
+                if rBoard not in visited:
+                    flag = True
+                    visited.add(rBoard)
+                # flag = True
             else:
-                wrongDirs.add(newRNumDir)
-        rBoard = safeBoard
-            
+                rBoard = temp
+                rNumDir = random.randint(0,3)
+                        # while rBoard is not None:
+        #     wrongDirs.add(rNumDir)
+        #     newRNumDir = random.randint(0,4)
+        #     if newRNumDir not in wrongDirs:
+        #         safeBoard = makeMove(safeBoard, newRNumDir)
+        #     else:
+        #         wrongDirs.add(newRNumDir)
+        # rBoard = safeBoard
     return rBoard
+
+def checkFull(data):
+    evens = [2,4,6,8,10,12,14,16,18,20,22,24]
+    for i in evens:
+        if len(data[i]) < 100:
+            return False
+    return True
 
 #okay one problem here, you know how we asked about 1200 random puzzles we test? If you look at the reading
 #it's 1200 random puzzles beacuse they did 100 puzzles at each depth from 2-24 going up even. In other words,
@@ -213,25 +237,63 @@ def randomPuzzle(start, numDep):
 #Apparently other groups did it by second method
 
 #Alex Comments: I like doing option number two
-def experiment():
+def experiment(option):
     tested = {}
-    for i in range(expNum):
-        values = [0,1,2,3,4,5,6,7,8]
-        random.shuffle(values)
-        testStart = Board(values, 0, 0)
-        testGoal = randomPuzzle(testStart)
-        tested[testStart] = testGoal
-        if testStart in tested:
-            if tested[testStart] == testGoal:
-                tested.add(testSub)
-        solution = aStar(testSub).pCost
+    data = {}
+    evens = [2,4,6,8,10,12,14,16,18,20,22,24]
+    for i in evens:
+        data[i] = []
+    finished = []
+    flag = False
+    count = 0
+    # while(flag == False):
+    for i in evens:
+        print(i)
+        while(len(data[i]) < 100):
+            print(str(i) + "'s" +"length: " + str(len(data[i])))
+            values = [0,1,2,3,4,5,6,7,8]
+            random.shuffle(values)
+            testStart = Board(values, 0, 0)
+            testGoal = randomPuzzle(testStart, i)
+            if testStart in tested:
+                if tested[testStart] == testGoal:
+                    continue
+            tested[testStart] = testGoal
+            solved = aStar(testStart, testGoal, option)
+            solution = solved[0].pCost
+            numNodes = solved[1]
+            if solution in data:
+                data[solution].append(numNodes)
+            #     if len(data[solution]) < 100:
+            #         data[solution].append(numNodes)
+            #     else:
+            #         if solution not in finished:
+                        #print(str(solution) + " is full!\n")
+                        #finished.append(solution)
+            #flag = checkFull(data)
+            count += 1
+            # if(count > 50000):
+            #     break
+            print("count: " + str(count))
+        finished.append(i)
+    return [finished, data]
 
+def computeAverages(data):
+    averages = {}
+    for i in data.keys():
+        sum = 0
+        for j in data[i]:
+        sum += j
+    averages[i] = sum / 100
+return averages
 
 def main():
     # Test Case for Scan
     values = [7,2,4,5,0,6,8,3,1]
     # gValues = [0,1,2,3,4,5,6,7,8]
     testBoard = Board(values, 0, 0)
+    print("Start: ")
+    print(testBoard)
     # goalBoard = Board(gValues, 0, 0)
     # print("Initial: ")
     # print(testBoard)
@@ -239,9 +301,15 @@ def main():
     # final = aStar(testBoard , goalBoard, 2)
     # print(final)
     # print(final.pCost)
-    test = randomPuzzle(testBoard, 2)
-    print(test)
-
+    print("Experiment: ")
+    b = experiment(1)
+    print("Result: ")
+    for i in b[0]:
+        print str(i) + ": " + str(len(b[1][i]))
+    print("data: ")
+    print b[1].values
+    final = computeAverages(b[1])
+    print final
 
 
 
