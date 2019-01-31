@@ -1,5 +1,6 @@
 dim = 3
 expNum = 1200
+lim = 100
 
 import random
 import Queue
@@ -168,7 +169,7 @@ def aStar(start, goal, option):
     while(not(frontier.empty())):
         node = frontier.get()[1]
         if(node.isGoal(goal)):
-            return [node, len(explored)]
+            return [node, (len(explored) + frontier.qsize())]
         explored.add(node)
         for i in range(4):
             tempBoard = Board(node.values, node.pCost, node.hCost)
@@ -249,7 +250,7 @@ def experiment(option):
     # while(flag == False):
     for i in evens:
         print(i)
-        while(len(data[i]) < 100):
+        while(len(data[i]) < lim):
             print(str(i) + "'s" +"length: " + str(len(data[i])))
             values = [0,1,2,3,4,5,6,7,8]
             random.shuffle(values)
@@ -278,14 +279,18 @@ def experiment(option):
         finished.append(i)
     return [finished, data]
 
-def computeAverages(data):
-    averages = {}
+def computeAverage(data):
+    average = {}
     for i in data.keys():
         sum = 0
+        index = 0
         for j in data[i]:
-        sum += j
-    averages[i] = sum / 100
-return averages
+            if(index == lim):
+                break
+            index += 1
+            sum += j
+        average[i] = sum / lim
+    return average
 
 def main():
     # Test Case for Scan
@@ -301,18 +306,44 @@ def main():
     # final = aStar(testBoard , goalBoard, 2)
     # print(final)
     # print(final.pCost)
-    print("Experiment: ")
-    b = experiment(1)
-    print("Result: ")
-    for i in b[0]:
-        print str(i) + ": " + str(len(b[1][i]))
-    print("data: ")
-    print b[1].values
-    final = computeAverages(b[1])
-    print final
-
-
-
+    test1 = experiment(1)
+    test2 = experiment(2)
+    print("|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||")
+    print("Experiments: ")
+    print("Number of Tests for each depth: ")
+    print("_____ H1:")
+    for i in test1[0]:
+        print str(i) + ": " + str(len(test1[1][i]))
+        print("\n")
+    print("_____ H2:")
+    for i in test2[0]:
+        print str(i) + ": " + str(len(test2[1][i]))
+        print("\n")
+    print("\n")
+    print("|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||")
+    print("Data Values for each depth: ")
+    print("_____ H1:")
+    for i in test1[1].keys():
+        print str(i) +  ": "
+        print str(test1[1][i])
+        print("\n")
+    print("_____ H2:")
+    for i in test2[1].keys():
+        print str(i) +  ": "
+        print str(test2[1][i])
+        print("\n")
+    print("\n")
+    print("|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||")
+    print("Averages for each depth: ")
+    print("_____ H1:")
+    final = computeAverage(test1[1])
+    for i in final.keys():
+        print str(i) +  ": " + str(final[i])
+    print("\n")
+    print("_____ H2:")
+    final = computeAverage(test2[1])
+    for i in final.keys():
+        print str(i) +  ": " + str(final[i])
 
 if __name__== "__main__":
     main()
